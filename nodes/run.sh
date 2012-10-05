@@ -1,3 +1,3 @@
 #!/bin/bash
 erl -compile bootstrap
-erl -noshell -s bootstrap start
+erl -noshell -s bootstrap start -name node
