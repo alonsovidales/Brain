@@ -40,7 +40,7 @@ check_node_status(Node_pid) ->
 %% @param [Node_to_update | Nodes_not_updated] list List of nodes to update
 %% @param ActiveNodes list List of active nodes
 %%
-update_nodes_lists([Node_to_update | Nodes_not_updated], ActiveNodes) ->
+update_nodes_lists([{_Check_id, Node_to_update} | Nodes_not_updated], ActiveNodes) ->
     io:format("Updating nodes ~w - ~w~n", [Node_to_update, ActiveNodes]),
     Node_to_update ! {update_nodes_list, ActiveNodes},
 
@@ -77,8 +77,9 @@ listener_loop(Is_master, Nodes) ->
                         spawn(bootstrap, check_node_status, [Pid_addr])),
 
                     % Update the list of nodes on each active node
-                    update_nodes_lists([Pid_addr | Nodes], [Pid_addr | Nodes]),
-                    listener_loop(Is_master, [Pid_addr | Nodes]);
+                    New_list_of_nodes = [{list_to_atom(Check_id), Pid_addr} | Nodes],
+                    update_nodes_lists(New_list_of_nodes, New_list_of_nodes),
+                    listener_loop(Is_master, New_list_of_nodes);
                 true ->
                     io:format("Node yet added ~w~n", [Nodes]),
                     listener_loop(Is_master, Nodes)
@@ -87,7 +88,7 @@ listener_loop(Is_master, Nodes) ->
         % Remove a node with pid "Pid_addr" from the list of nodes
         {remove_node, Pid_addr} ->
             io:format("Removing node node ~w~n", [Pid_addr]),
-            Active_nodes = lists:delete(Pid_addr, Nodes),
+            Active_nodes = lists:keydelete(Pid_addr, 2, Nodes),
             % Update the list of nodes on each active node
             update_nodes_lists(Active_nodes, Active_nodes),
             listener_loop(Is_master, Active_nodes);
@@ -95,7 +96,10 @@ listener_loop(Is_master, Nodes) ->
         % Sends the list of active nodes to the node
         {get_nodes, Pid_addr} ->
             Pid_addr ! Nodes,
-            listener_loop(Is_master, Nodes)
+            listener_loop(Is_master, Nodes);
+
+        Debug ->
+            io:format("Not cached message type ~w~n", [Debug])
     end.
 
 %%
