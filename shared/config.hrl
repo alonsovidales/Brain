@@ -10,3 +10,5 @@
 -define(MASTER_MANAGER, manager@tras2.es).
 %% Slave node
 -define(SLAVE_MANAGER, manager@tras2.es).
+%% Max time to keep an object on memory withouth be used
+-define(TIME_TO_CONSIDERER_OBJECT_INACTIVE, 2000).
