@@ -8,7 +8,12 @@
 %%
 
 -module(bootstrap).
--export([start/0, listener_loop/3]).
+-export([
+    start/0,
+    listener_loop/3,
+    object_record_control_loop/2,
+    persist_object/3,
+    get_object_form_persistance_layer/3]).
 -include("../shared/config.hrl").
 
 %%
@@ -32,12 +37,53 @@ get_node_pos([{Node_name, _Pid} | Rest], Current_pos) ->
             get_node_pos(Rest, Current_pos + 1)
     end.
 
+%%
+%% Controls if an object is in use, and if it isnot accessed during
+%% a TIME_TO_CONSIDERER_OBJECT_INACTIVE period of time, persist the
+%% object on S3
+%%
+%% @param Main_loop_pid Pid The Pid of the main loop who will exectue the
+%%                          persistance migration to S3 in ordedr to keep
+%%                          the consistency
+%% @param Object_id List The object id to be monitorized
+%%
+object_record_control_loop(Main_loop_pid, Object_id) ->
+    receive
+        used ->
+            object_record_control_loop(Main_loop_pid, Object_id)
+    after ?TIME_TO_CONSIDERER_OBJECT_INACTIVE ->
+        Main_loop_pid ! {persist_object, Object_id}
+    end.
+
+
+persist_object(Retr_pid, Object_id, {ok, Value}) ->
+    io:format("Storing on S3 object \"~w\" with value \"~w\"~n", [list_to_atom(Object_id), list_to_atom(Value)]),
+    Retr_pid ! {remove_object_from_dict, Object_id}.
+
+get_object_form_persistance_layer(Pid_to_add_on_mem, Retr_pid, Object_id) ->
+    io:format("Getting object from S3 with id: \"~w\"~n", [list_to_atom(Object_id)]),
+    % TODO: Check if the object exists in case of don't exists, return ko to Retr_pid
+    Value = "This is the value from S3...",
+    Pid_to_add_on_mem ! {s, Object_id, Value},
+    Retr_pid ! {ok, Value}.
+
 listener_loop(Current_nodes, Objects_dict, Neighbour) ->
     io:format("Listener loop, Current_nodes: ~w~n", [Current_nodes]),
     receive
         % Save a new object on the local memory dictionary
         {s, Object_id, Value} ->
             io:format("Save Object Key: \"~w\" Value: \"~w\"~n", [list_to_atom(Object_id), list_to_atom(Value)]),
+
+            % Check if the observer process is yet launched for this objecft, and in that case,
+            % don't launch it again
+            Isset_pid = whereis(list_to_atom(string:concat("observe_", Object_id))), 
+            if
+                Isset_pid == undefined ->
+                    register(
+                        list_to_atom(string:concat("observe_", Object_id)),
+                        spawn(bootstrap, object_record_control_loop, [self(), Object_id]))
+            end,
+
             listener_loop(Current_nodes, dict:store(Object_id, Value, Objects_dict), Neighbour);
 
         % Get an object from memory with Object_id as key, if Consistency is true,
@@ -59,16 +105,31 @@ listener_loop(Current_nodes, Objects_dict, Neighbour) ->
                     end,
 
                     if
-                        Consistency and (Pid /= self()) and (Neighbour_id /= Origin_node) ->
+                        Consistency and (Neighbour_id /= Origin_node) ->
                             io:format("Key ~w not found, seaching on neightbour~n", [list_to_atom(Object_id)]),
                             Neighbour_pid ! {g, Consistency, Object_id, Pid, Origin_node};
+                            % Don't use consistency, or the object is not in a neghtbour,
+                            % get it from the persistance layer
                         true ->
-                            io:format("Key ~w not found, don't use consistency~n", [list_to_atom(Object_id)]),
+                            io:format("Key ~w not found, try to get it from S3~n", [list_to_atom(Object_id)]),
+                            spawn(bootstrap, get_object_form_persistance_layer, [self(), Pid, Object_id]),
                             Pid ! ko
                     end
             end,
 
             listener_loop(Current_nodes, Objects_dict, Neighbour);
+
+        % Dumps the object to the persistance layer in this case S3
+        {persist_object, Object_id} ->
+            io:format("Move object with id \"~w\" to the persistance layer~n", [Object_id]),
+            % Creating a new process in order to don't block the system dump the object to S3
+            % this call will call to this loop after sotre the object in S3 to keep the consistency
+            spawn(bootstrap, persist_object, [self(), Object_id, dict:find(Object_id, Objects_dict)]),
+            listener_loop(Current_nodes, Objects_dict, Neighbour);
+
+        % Called after the store to S3 is done
+        {remove_object_from_dict, Object_id} ->
+            listener_loop(Current_nodes, dict:erase(Object_id, Objects_dict), Neighbour);
 
         % Updates the list of active nodes
         {update_nodes_list, Nodes} ->
