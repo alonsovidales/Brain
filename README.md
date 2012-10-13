@@ -21,11 +21,11 @@ A file called .erlang.cookie  and located on the home directory of the user who 
 <br />
 # Communcation protocol
 The system uses the Erlang messages protocol, for PHP you can use the [Peb](http://code.google.com/p/mypeb/) extension. The allowed messages are:<br />
-* {s, &lt;object_id&gt;, &lt;value&gt;} :<br />
+* <b>{s, &lt;object_id&gt;, &lt;value&gt;} :</b><br />
     Create or update the content of an object<br />
         <b>object_id:</b> string The id of the object to be created / updated<br />
         <b>value:</b> mixed The content of the object to be setted
-* {g, &lt;consistency&gt;, &lt;object_id&gt;, &lt;pid&gt;, null} :<br />
+* <b>{g, &lt;consistency&gt;, &lt;object_id&gt;, &lt;pid&gt;, null} :</b><br />
     Sends the value of the object if exists to the pid specified as forth parameter of the tupple.<br />
         <b>consistency:</b> true|false Specify true if consistency is neecesary, or false if you only needs eventual consistency<br />
         <b>object_id:</b> string The id of the object to be created / updated<br/>
@@ -35,7 +35,7 @@ The system uses the Erlang messages protocol, for PHP you can use the [Peb](http
         <b>{ok, &lt;value&gt;}:</b> The object was found. Value of the value of the object with id object_id<br />
     <br />
     <b>IMPORTANT:</b> Specify a timeout for the response, during the period when one of the nodes crashes, and the nodes ring is rebuilt, the system doesn't retuns anything, this should to be considered a read error.<br />
-* {p, &lt;object_id&gt;} : <br />
+* <b>{p, &lt;object_id&gt;} :</b><br />
     Dumps an object to S3 immediately without wait.<br />
 
 # License
