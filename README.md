@@ -5,8 +5,9 @@ In order to obtain the best performance, and the max reduction on the network tr
 <br/>
 # Installation
 Config the systems (see the config section), and run:<br />
-* Managers: manager/run.sh<br />
-* Nodes: nodes/run.sh<br />
+* Managers: manager/run.sh
+* Nodes: nodes/run.sh
+
 Copy the code to all the front servers and to the two manager servers.<br />
 [Supervisor](http://pypi.python.org/pypi/supervisor) is recomended in order to guaranty all the process running, and the logs centralized.<br />
 <br />
