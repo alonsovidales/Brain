@@ -21,22 +21,24 @@ A file called .erlang.cookie  and located on the home directory of the user who 
 # Communcation protocol
 The system uses the Erlang messages protocol, for PHP you can use the [Peb](http://code.google.com/p/mypeb/) extension. The allowed messages are:<br />
 * {s, &lt;object_id&gt;, &lt;value&gt;} :
-> Create or update the content of an object
->> object_id: string The id of the object to be created / updated
->> value: mixed The content of the object to be setted
+    Create or update the content of an object<br />
+        object_id: string The id of the object to be created / updated<br />
+        value: mixed The content of the object to be setted
+<br />
 * {g, &lt;consistency&gt;, &lt;object_id&gt;, &lt;pid&gt;, null}
-> Sends the value of the object if exists to the pid specified as forth parameter of the tupple.
->> consistency: true|false Specify true if consistency is neecesary, or false if you only needs eventual consistency
->> object_id: string The id of the object to be created / updated
->> pid: The pid of the process who needs the object, use self() if the process is the current process
->> Values sent to the process with the pid specified after the call:
->>> ko: The object was not found
->>> {ok, &lt;value&gt;}: The object was found. Value of the value of the object with id object_id
-> Specify a timeout for the response, during the period when one of the nodes crashes, and the nodes ring is rebuilt, the system doesn't retuns anything, this should to be considered a read error.
+    Sends the value of the object if exists to the pid specified as forth parameter of the tupple.<br />
+        consistency: true|false Specify true if consistency is neecesary, or false if you only needs eventual consistency<br />
+        object_id: string The id of the object to be created / updated<br/>
+        pid: The pid of the process who needs the object, use self() if the process is the current process<br />
+    Values are sent to the process with the pid specified after the call:<br />
+        ko: The object was not found<br />
+        {ok, &lt;value&gt;}: The object was found. Value of the value of the object with id object_id<br />
+    <br />
+    IMPORTANT: Specify a timeout for the response, during the period when one of the nodes crashes, and the nodes ring is rebuilt, the system doesn't retuns anything, this should to be considered a read error.<br />
 * {p, &lt;object_id&gt;}
-> Dumps an object to S3 without wait for a 
-
+    Dumps an object to S3 immediately without wait.<br />
+<br />
 # License
 This is a dual licensed software:<br />
-> [MIT](http://opensource.org/licenses/MIT)
-> [GPL](http://www.gnu.org/licenses/gpl.html)
+* [MIT](http://opensource.org/licenses/MIT)
+* [GPL](http://www.gnu.org/licenses/gpl.html)
