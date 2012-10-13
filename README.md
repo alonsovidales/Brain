@@ -22,10 +22,9 @@ A file called .erlang.cookie  and located on the home directory of the user who 
 # Communcation protocol
 The system uses the Erlang messages protocol, for PHP you can use the [Peb](http://code.google.com/p/mypeb/) extension. The allowed messages are:<br />
 * {s, &lt;object_id&gt;, &lt;value&gt;} :
-
->    Create or update the content of an object<br />
->        <b>object_id:</b> string The id of the object to be created / updated<br />
->        <b>value:</b> mixed The content of the object to be setted
+    Create or update the content of an object<br />
+        <b>object_id:</b> string The id of the object to be created / updated<br />
+        <b>value:</b> mixed The content of the object to be setted
 * {g, &lt;consistency&gt;, &lt;object_id&gt;, &lt;pid&gt;, null}
     Sends the value of the object if exists to the pid specified as forth parameter of the tupple.<br />
         <b>consistency:</b> true|false Specify true if consistency is neecesary, or false if you only needs eventual consistency<br />
