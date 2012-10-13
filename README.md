@@ -5,12 +5,12 @@ In order to obtain the best performance, and the max reduction on the network tr
 <br/>
 # Installation
 Config the systems (see the config section), and run:<br />
-* Managers: manager/run.sh
-* Nodes: nodes/run.sh
+* Managers: manager/run.sh<br />
+* Nodes: nodes/run.sh<br />
 Copy the code to all the front servers and to the two manager servers.<br />
 [Supervisor](http://pypi.python.org/pypi/supervisor) is recomended in order to guaranty all the process running, and the logs centralized.<br />
 <br />
-# Configuration<br />
+# Configuration
 The system is designed to work with Erlang V5.9.2 or higher. Check the [deployment diagram](https://github.com/alonsovidales/Brain/blob/master/docs/brain_deployment_diagram.png).<br />
 Each front server should to run an erlang node, use the nodes/run.sh command in order to launch it. The system is designed to work together with the server applications, all the applications on the front server should to communicate with the local node in order to reduce the network load, and the system load.<br />
 Two instances should to run the manager code.<br />
