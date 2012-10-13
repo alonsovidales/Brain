@@ -11,4 +11,11 @@
 %% Slave node
 -define(SLAVE_MANAGER, manager@tras2.es).
 %% Max time to keep an object on memory withouth be used
--define(TIME_TO_CONSIDERER_OBJECT_INACTIVE, 2000).
+-define(TIME_TO_CONSIDERER_OBJECT_INACTIVE, 10000).
+
+%% Amazon S3 access config
+-define(ACCESS_KEY, "MY_ACCESS_KEY").
+-define(SECRET_KEY, "MY_SECRET_KEY").
+-define(AWS_S3_HOST, "s3.amazonaws.com").
+-define(TIMEOUT, infinity).
+-define(CHUNK_SIZE, 1024 5).

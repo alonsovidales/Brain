@@ -13,8 +13,7 @@ get_object_from_node(Object_id, Pid, Consistency) ->
     end,
     Return.
 
-
-add_object_to_first_object([Node | _Rest], Object_id, Value) ->
+add_object_to_first_node([Node | _Rest], Object_id, Value) ->
     {Node_id, Node_pid} = Node,
     io:format("Adding Object \"~w\" to Node \"~w\" with value: \"~w\"~n", [
         list_to_atom(Object_id),
@@ -67,7 +66,7 @@ start() ->
 
     io:format("Current list: ~w~n", [Nodes]),
 
-    add_object_to_first_object(Nodes, "test_object", "This is the value!!!!"),
+    add_object_to_first_node(Nodes, "test_object", "This is the value!!!!"),
 
     get_object_asking_to_first_node(Nodes, "test_object"),
 

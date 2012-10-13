@@ -15,6 +15,7 @@
     persist_object/3,
     get_object_form_persistance_layer/3]).
 -include("../shared/config.hrl").
+-compile("../shared/vendor/erls3.erl").
 
 %%
 %% Used to send a signal each TIME_TO_REFRESH_NODE_MS / 2 miliseconds
@@ -121,7 +122,7 @@ listener_loop(Current_nodes, Objects_dict, Neighbour) ->
 
         % Dumps the object to the persistance layer in this case S3
         {persist_object, Object_id} ->
-            io:format("Move object with id \"~w\" to the persistance layer~n", [Object_id]),
+            io:format("Move object with id \"~w\" to the persistance layer~n", [list_to_atom(Object_id)]),
             % Creating a new process in order to don't block the system dump the object to S3
             % this call will call to this loop after sotre the object in S3 to keep the consistency
             spawn(bootstrap, persist_object, [self(), Object_id, dict:find(Object_id, Objects_dict)]),
