@@ -25,7 +25,6 @@ The system uses the Erlang messages protocol, for PHP you can use the [Peb](http
     Create or update the content of an object<br />
         object_id: string The id of the object to be created / updated<br />
         value: mixed The content of the object to be setted
-<br />
 * {g, &lt;consistency&gt;, &lt;object_id&gt;, &lt;pid&gt;, null}
     Sends the value of the object if exists to the pid specified as forth parameter of the tupple.<br />
         consistency: true|false Specify true if consistency is neecesary, or false if you only needs eventual consistency<br />
@@ -38,7 +37,7 @@ The system uses the Erlang messages protocol, for PHP you can use the [Peb](http
     IMPORTANT: Specify a timeout for the response, during the period when one of the nodes crashes, and the nodes ring is rebuilt, the system doesn't retuns anything, this should to be considered a read error.<br />
 * {p, &lt;object_id&gt;}
     Dumps an object to S3 immediately without wait.<br />
-<br />
+
 # License
 This is a dual licensed software:<br />
 * [MIT](http://opensource.org/licenses/MIT)
