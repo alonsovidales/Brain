@@ -53,7 +53,7 @@ object_record_control_loop(Main_loop_pid, Object_id) ->
         used ->
             object_record_control_loop(Main_loop_pid, Object_id)
     after ?TIME_TO_CONSIDERER_OBJECT_INACTIVE ->
-        Main_loop_pid ! {persist_object, Object_id}
+        Main_loop_pid ! {p, Object_id}
     end.
 
 
@@ -75,26 +75,34 @@ listener_loop(Current_nodes, Objects_dict, Neighbour) ->
         {s, Object_id, Value} ->
             io:format("Save Object Key: \"~w\" Value: \"~w\"~n", [list_to_atom(Object_id), list_to_atom(Value)]),
 
-            % Check if the observer process is yet launched for this objecft, and in that case,
-            % don't launch it again
-            Isset_pid = whereis(list_to_atom(string:concat("observe_", Object_id))), 
+            % Check if the observer process is yet launched for this object, and in that case,
+            % don't launch it again, only modify the object
+            Observer_pid = whereis(list_to_atom(string:concat("observe_", Object_id))), 
             if
-                Isset_pid == undefined ->
+                Observer_pid == undefined ->
                     register(
                         list_to_atom(string:concat("observe_", Object_id)),
-                        spawn(bootstrap, object_record_control_loop, [self(), Object_id]))
+                        spawn(bootstrap, object_record_control_loop, [self(), Object_id])),
+        	    % Add the object to the dictionary, the first param of the tuple indicates if are not modified will not be stored
+	            listener_loop(Current_nodes, dict:store(Object_id, {false, Value}, Objects_dict), Neighbour);
+		true ->
+                    % Refresh the observer timmer
+                    Observer_pid ! used,
+                    % Modify the object, set the modify flag to true this meand that this object should to be stored
+	            listener_loop(Current_nodes, dict:store(Object_id, {true, Value}, Objects_dict), Neighbour)
             end,
-
-            listener_loop(Current_nodes, dict:store(Object_id, Value, Objects_dict), Neighbour);
 
         % Get an object from memory with Object_id as key, if Consistency is true,
         % the system will askto all the nodes until find it.
         {g, Consistency, Object_id, Pid, Origin_pid} ->
             io:format("Looking for global object ~w~n", [list_to_atom(Object_id)]),
             case dict:find(Object_id, Objects_dict) of
-                {ok, Value} ->
+                {ok, {Modified, Value}} ->
                     io:format("Value found for key ~w: \"~w\"~n", [list_to_atom(Object_id), list_to_atom(Value)]),
-                    Pid ! {ok, Value};
+                    Pid ! {ok, Value},
+                    % Refresh the observer timmer
+                    Observer_pid = whereis(list_to_atom(string:concat("observe_", Object_id))),
+                    Observer_pid ! used;
                 error ->
                     {Neighbour_id, Neighbour_pid} = Neighbour,
                     io:format("Asking to Neighbour \"~w\" from \"~w\"~n", [Neighbour_id, node()]),
@@ -121,7 +129,7 @@ listener_loop(Current_nodes, Objects_dict, Neighbour) ->
             listener_loop(Current_nodes, Objects_dict, Neighbour);
 
         % Dumps the object to the persistance layer in this case S3
-        {persist_object, Object_id} ->
+        {p, Object_id} ->
             io:format("Move object with id \"~w\" to the persistance layer~n", [list_to_atom(Object_id)]),
             % Creating a new process in order to don't block the system dump the object to S3
             % this call will call to this loop after sotre the object in S3 to keep the consistency
