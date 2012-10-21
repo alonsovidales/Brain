@@ -99,7 +99,7 @@ listener_loop(Is_master, Nodes) ->
             listener_loop(Is_master, Nodes);
 
         Debug ->
-            io:format("Not cached message type ~w~n", [Debug])
+            io:format("Not catched message type ~w~n", [Debug])
     end.
 
 %%

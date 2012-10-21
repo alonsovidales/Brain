@@ -1,5 +1,5 @@
 %%
-%% Run this file on each master node
+%% Compile and run this file on each master node
 %%
 %% @author Alonso Vidales <alonso.vidales@tras2.es>
 %% @version 0.1

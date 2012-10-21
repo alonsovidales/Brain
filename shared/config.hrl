@@ -13,9 +13,18 @@
 %% Max time to keep an object on memory withouth be used
 -define(TIME_TO_CONSIDERER_OBJECT_INACTIVE, 10000).
 
-%% Amazon S3 access config
--define(ACCESS_KEY, "MY_ACCESS_KEY").
--define(SECRET_KEY, "MY_SECRET_KEY").
--define(AWS_S3_HOST, "s3.amazonaws.com").
--define(TIMEOUT, infinity).
--define(CHUNK_SIZE, 1024 5).
+%% Amazon S3 PSAL config
+%% Uncomment the next lines in case of use the S3 PSAL, or comment otherwise
+% -define(ACCESS_KEY, "MY_ACCESS_KEY").
+% -define(SECRET_KEY, "MY_SECRET_KEY").
+% -define(AWS_S3_HOST, "s3.amazonaws.com").
+% -define(TIMEOUT, infinity).
+% -define(CHUNK_SIZE, 1024 5).
+
+%% FTP PSAL config
+%% Uncomment the next lines in case of use the FTP PSAL, or comment otherwise
+-define(FTP_UNAME, "ftp_user").
+-define(FTP_PASS, "ftp_pass").
+-define(FTP_HOST, "localhost").
+-define(FTP_PORT, 21).
+-define(BASE_DIR, "brain_test").
