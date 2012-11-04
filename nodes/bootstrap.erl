@@ -15,7 +15,8 @@
     persist_object/3,
     get_object_form_persistance_layer/3]).
 -include("../shared/config.hrl").
--compile("../shared/vendor/erls3.erl").
+-compile("../libs/ftp_psal.erl").
+%-compile("../shared/vendor/erls3.erl").
 
 %%
 %% Used to send a signal each TIME_TO_REFRESH_NODE_MS / 2 miliseconds
@@ -56,17 +57,28 @@ object_record_control_loop(Main_loop_pid, Object_id) ->
         Main_loop_pid ! {p, Object_id}
     end.
 
-
 persist_object(Retr_pid, Object_id, {ok, Value}) ->
-    io:format("Storing on S3 object \"~w\" with value \"~w\"~n", [list_to_atom(Object_id), list_to_atom(Value)]),
-    Retr_pid ! {remove_object_from_dict, Object_id}.
+    %io:format("Storing on S3 object \"~w\" with value \"~w\"~n", [list_to_atom(Object_id), list_to_atom(Value)]),
+    % Only remove the object from memory if it was saved successfuly
+    Stored = ftp_psal:create_or_update_file(Object_id, Value),
+    if
+        Stored == false ->
+            false;
+        true ->
+            Retr_pid ! {remove_object_from_dict, Object_id}
+    end.
 
 get_object_form_persistance_layer(Pid_to_add_on_mem, Retr_pid, Object_id) ->
     io:format("Getting object from S3 with id: \"~w\"~n", [list_to_atom(Object_id)]),
     % TODO: Check if the object exists in case of don't exists, return ko to Retr_pid
-    Value = "This is the value from S3...",
-    Pid_to_add_on_mem ! {s, Object_id, Value},
-    Retr_pid ! {ok, Value}.
+    case ftp_psal:get_file_content(Object_id) of
+        false ->
+            Retr_pid ! ko,
+            false;
+        Value ->
+            Pid_to_add_on_mem ! {s, Object_id, Value},
+            Retr_pid ! {ok, Value}
+    end.
 
 listener_loop(Current_nodes, Objects_dict, Neighbour) ->
     io:format("Listener loop, Current_nodes: ~w~n", [Current_nodes]),
@@ -90,7 +102,7 @@ listener_loop(Current_nodes, Objects_dict, Neighbour) ->
                     Observer_pid ! used,
                     % Modify the object, set the modify flag to true this meand that this object should to be stored
 	            listener_loop(Current_nodes, dict:store(Object_id, {true, Value}, Objects_dict), Neighbour)
-            end,
+            end;
 
         % Get an object from memory with Object_id as key, if Consistency is true,
         % the system will askto all the nodes until find it.

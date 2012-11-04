@@ -7,7 +7,7 @@
 %% @see config.hrl
 %%
 
--module(psal).
+-module(ftp_psal).
 
 -export([
     get_file_content/1,
@@ -23,19 +23,19 @@
 %% @return pid The PID of the FTP connection, atom false is the connection can't be opened
 %%
 connect() ->
-    case ftp:open(?FTP_HOST, {port, ?FTP_PORT}) of
+    case ftp:open(?FTP_HOST, [{port, ?FTP_PORT}]) of
         {ok, Pid} ->
             ftp:user(Pid, ?FTP_UNAME, ?FTP_PASS),
 
             case ftp:cd(Pid, ?BASE_DIR) of
                 ok ->
                     Pid;
-                {error, Reason} ->
+                {error, _Reason} ->
                     io:format("Error trying to change to directory \"~w\"~n", [?BASE_DIR]),
                     false
-            end,
+            end;
 
-        {error, Reason} ->
+        {error, _Reason} ->
             io:format("Error opening connection with FTP server \"~w\" on port: \"~w\"~n", [?FTP_HOST, ?FTP_PORT]),
             false
     end.
@@ -49,12 +49,13 @@ connect() ->
 %% @return bool Atom false if something was wrong of true if the written was success
 %%
 create_or_update_file(File_name, Content) ->
-    Pid = connect()
+    Pid = connect(),
     if
         Pid == false ->
             false;
 
         true ->
+            io:format("Trying to save ~w with value ~w~n", [File_name, Content]),
             ftp:send_bin(Pid, Content, File_name),
             ftp:close(Pid)
     end.
@@ -66,7 +67,7 @@ create_or_update_file(File_name, Content) ->
 %% @return bool Atom false if something was wrong of true if the file was deleted
 %%
 del_file(File_name) ->
-    Pid = connect()
+    Pid = connect(),
     if
         Pid == false ->
             false;
@@ -85,7 +86,7 @@ del_file(File_name) ->
 %% @return bin The binary content of the file, or an atom false
 %%
 get_file_content(File_name) ->
-    Pid = connect()
+    Pid = connect(),
     if
         Pid == false ->
             false;
