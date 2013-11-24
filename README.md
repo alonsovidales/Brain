@@ -1,3 +1,6 @@
+<b>IMPORTANT:</b>  This is a proof of concept, the final version is in: [Brain2](https://github.com/alonsovidales/Brain2/)<br />
+<br />
+
 # General description
 The main propose of this system is to work as a temporaly on-memory storage system, working as an high performance shared memory cache, reducing the number of reads / writes to the permanent storage system, the Amazon S3, and avoiding the eventual consistency problem of this.<br />
 This system is designed to work together with another systems on the same front servers.<br />

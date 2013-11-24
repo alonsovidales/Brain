@@ -11,7 +11,7 @@
 %% Slave node
 -define(SLAVE_MANAGER, manager@tras2.es).
 %% Max time to keep an object on memory withouth be used
--define(TIME_TO_CONSIDERER_OBJECT_INACTIVE, 10000).
+-define(TIME_TO_CONSIDERER_OBJECT_INACTIVE, 100).
 
 %% Amazon S3 PSAL config
 %% Uncomment the next lines in case of use the S3 PSAL, or comment otherwise
@@ -23,8 +23,8 @@
 
 %% FTP PSAL config
 %% Uncomment the next lines in case of use the FTP PSAL, or comment otherwise
--define(FTP_UNAME, "ftp_user").
--define(FTP_PASS, "ftp_pass").
+-define(FTP_UNAME, "tras2").
+-define(FTP_PASS, "b2d69e5ccd").
 -define(FTP_HOST, "localhost").
 -define(FTP_PORT, 21).
--define(BASE_DIR, "brain_test").
+-define(BASE_DIR, "httpdocs/aux/").
